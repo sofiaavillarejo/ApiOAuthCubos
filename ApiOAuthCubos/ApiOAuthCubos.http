@@ -1,0 +1,6 @@
+@ApiOAuthCubos_HostAddress = http://localhost:5283
+
+GET {{ApiOAuthCubos_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
