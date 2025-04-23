@@ -26,6 +26,12 @@ namespace ApiOAuthCubos.Controllers
             return await this.repo.GetCubosAsync();
         }
 
+        [HttpGet("CubosBlob")]
+        public async Task<ActionResult<List<Cubo>>> GetCubosBlob()
+        {
+            return await this.repo.GetCubosBlobAsync();
+        } 
+
         [HttpGet("CubosMarca")]
         public async Task<ActionResult<List<Cubo>>> GetCubosPorMarca(string marca)
         {

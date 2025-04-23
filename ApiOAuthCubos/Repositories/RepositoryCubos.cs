@@ -1,5 +1,6 @@
 ﻿using ApiOAuthCubos.Data;
 using ApiOAuthCubos.Models;
+using ApiOAuthCubos.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 
@@ -8,10 +9,12 @@ namespace ApiOAuthCubos.Repositories
     public class RepositoryCubos
     {
         private CubosContext context;
+        private ServiceStorageBlob service;
 
-        public RepositoryCubos(CubosContext context)
+        public RepositoryCubos(CubosContext context, ServiceStorageBlob service)
         {
             this.context = context;
+            this.service = service;
         }
 
         public async Task<List<Cubo>> GetCubosAsync()
@@ -60,7 +63,7 @@ namespace ApiOAuthCubos.Repositories
         public async Task<List<Cubo>> GetCubosBlobAsync()
         {
             List<Cubo> cubos = await this.context.Cubos.ToListAsync();
-            string containerUrl = this.service.GetContainerUrl("examenaga");
+            string containerUrl = this.service.GetContainerUrl("cubos");
 
             foreach (Cubo c in cubos)
             {

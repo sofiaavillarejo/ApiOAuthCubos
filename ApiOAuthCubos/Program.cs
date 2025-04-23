@@ -1,7 +1,9 @@
 using ApiOAuthCubos.Data;
 using ApiOAuthCubos.Helpers;
 using ApiOAuthCubos.Repositories;
+using ApiOAuthCubos.Services;
 using Azure.Security.KeyVault.Secrets;
+using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +32,12 @@ string connectionString = secret.Value;
 
 builder.Services.AddDbContext<CubosContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddTransient<RepositoryCubos>();
+
+KeyVaultSecret storageSecret = await secretClient.GetSecretAsync("Storage");
+string storage = storageSecret.Value;
+BlobServiceClient blobService = new BlobServiceClient(storage);
+builder.Services.AddTransient<BlobServiceClient>(x => blobService);
+builder.Services.AddTransient<ServiceStorageBlob>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
