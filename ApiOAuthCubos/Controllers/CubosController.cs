@@ -26,6 +26,7 @@ namespace ApiOAuthCubos.Controllers
             return await this.repo.GetCubosAsync();
         }
 
+        [Authorize]
         [HttpGet("CubosBlob")]
         public async Task<ActionResult<List<Cubo>>> GetCubosBlob()
         {
@@ -47,11 +48,59 @@ namespace ApiOAuthCubos.Controllers
 
         [Authorize]
         [HttpGet("PerfilUser")]
-        public async Task<ActionResult<UserModel>> PerfilUsuario(int iduser)
+        public async Task<ActionResult<UserModel>> PerfilUsuario()
         {
             UserModel model = this.helper.GetUser();
             return model;
         }
+
+        [Authorize]
+        [HttpGet("PerfilBlob")]
+        public async Task<ActionResult<UserModel>> PerfilUsuarioBlob()
+        {
+
+            UserModel model = this.helper.GetUser();
+            var userblob = await this.repo.PerfilUsuarioBlobAsync(model.IdUsuario);
+            return userblob;
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<UserModel>> GetCompraUsuario()
+        {
+
+            UserModel model = this.helper.GetUser();
+            var compras = await this.repo.GetCompraUsuarioAsync(model.IdUsuario);
+            return Ok(compras);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<ActionResult> RealizarPedido(List<int> idsCubos)
+        {
+
+            UserModel model = this.helper.GetUser();
+
+
+            if (idsCubos == null || idsCubos.Count == 0)
+            {
+                return BadRequest("Selecciona mas de un cubo");
+            }
+
+            await this.repo.RealizarPedido(model.IdUsuario, idsCubos);
+
+            return Ok(new
+            {
+                message = "Compra realizada",
+                userId = model.IdUsuario,
+                items = idsCubos.Count
+            });
+
+
+        }
+
 
     }
 }

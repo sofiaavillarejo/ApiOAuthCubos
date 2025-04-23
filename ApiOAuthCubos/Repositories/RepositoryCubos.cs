@@ -82,5 +82,81 @@ namespace ApiOAuthCubos.Repositories
             return cubos;
         }
 
+        public async Task<UserModel> PerfilUsuarioBlobAsync(int id)
+        {
+            User usuario = await this.context.Users.Where(x => x.IdUsuario == id).FirstOrDefaultAsync();
+
+            UserModel model = new UserModel
+            {
+                IdUsuario = usuario.IdUsuario,
+                Nombre = usuario.Nombre,
+                Email = usuario.Email,
+                Imagen = usuario.Imagen
+            };
+
+            if (!string.IsNullOrEmpty(usuario.Imagen))
+            {
+                string containerUrl = this.service.GetContainerUrl("cubos");
+
+                if (!usuario.Imagen.StartsWith("http"))
+                {
+                    string imagePath = usuario.Imagen;
+                    if (!imagePath.StartsWith("USUARIOS/"))
+                    {
+                        imagePath = "USUARIOS/" + imagePath;
+                    }
+
+                    model.Imagen = containerUrl + "/" + imagePath;
+                }
+                else
+                {
+                    model.Imagen = usuario.Imagen;
+                }
+            }
+
+            return model;
+        }
+
+        public async Task<List<CompraCubo>> GetCompraUsuarioAsync(int id)
+        {
+            return await this.context.ComprasCubos
+                .Where(x => x.IdUsuario == id)
+                .ToListAsync();
+        }
+        public async Task<int> GetMaxPedidoIdAsync()
+        {
+            if (!await this.context.ComprasCubos.AnyAsync())
+            {
+                return 1;
+            }
+            return await this.context.ComprasCubos.MaxAsync(x => x.IdPedido) + 1;
+        }
+
+        public async Task RealizarPedido(int idUsuario, List<int> idsCubos)
+        {
+            int idPedido = await this.GetMaxPedidoIdAsync();
+            DateTime fechaPedido = DateTime.Now;
+
+            List<CompraCubo> compras = new List<CompraCubo>();
+
+            foreach (int idCubo in idsCubos)
+            {
+                CompraCubo compra = new CompraCubo
+                {
+                    IdPedido = idPedido,
+                    IdCubo = idCubo,
+                    IdUsuario = idUsuario,
+                    FechaPedido = fechaPedido
+                };
+
+                compras.Add(compra);
+                idPedido++;
+            }
+
+            await this.context.ComprasCubos.AddRangeAsync(compras);
+            await this.context.SaveChangesAsync();
+        }
+
+
     }
 }
